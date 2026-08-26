@@ -1,40 +1,74 @@
-cmake_minimum_required(VERSION 3.10)
-project(FastBoot)
-
+# mínimo CMake
+cmake_minimum_required(VERSION 3.14)
+project(FastBoot_GtaSa_AML LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_POSITION_INDEPENDENT_CODE ON) # bibliotecas compartilhadas normalmente precisam de PIC
 
-# mensagens úteis para os logs do CI
-message(STATUS "CMAKE_SYSTEM_NAME=${CMAKE_SYSTEM_NAME}")
-message(STATUS "ANDROID_ABI=${ANDROID_ABI}")
-message(STATUS "ANDROID_PLATFORM=${ANDROID_PLATFORM}")
-message(STATUS "ANDROID_NDK=${ANDROID_NDK}")
+include(FetchContent)
 
-add_library(${PROJECT_NAME} SHARED
-  include/mod/config.cpp
+# URLs / tags
+set(AML_CORE_REPO "https://github.com/RusJJ/AndroidModLoader.git")
+set(SAUTILS_REPO  "https://github.com/AndroidModLoader/SAUtils.git")
+set(GIT_TAG       "main") # ou uma tag/commit específico
+
+# Fonte do seu projeto
+set(PROJ_SOURCES
   src/main.cpp
   src/socialclub.cpp
   src/startmode.cpp
 )
 
-target_include_directories(${PROJECT_NAME} PRIVATE
-  ${CMAKE_SOURCE_DIR}/include
-)
+# --- Fetch AndroidModLoader (core) ---
+FetchContent_Declare(aml_core GIT_REPOSITORY ${AML_CORE_REPO} GIT_TAG ${GIT_TAG})
+FetchContent_Populate(aml_core) # obtido em aml_core_SOURCE_DIR
 
-# link com a lib de log do Android (procura via find_library quando o toolchain está ativo)
-if(ANDROID)
-  find_library(LOG_LIB log)
-  if(LOG_LIB)
-    message(STATUS "Found log lib: ${LOG_LIB}")
-    target_link_libraries(${PROJECT_NAME} PRIVATE ${LOG_LIB})
-  else()
-    message(WARNING "Android log library not found via find_library; falling back to 'log' name")
-    target_link_libraries(${PROJECT_NAME} PRIVATE log)
-  endif()
-else()
-  target_link_libraries(${PROJECT_NAME} PRIVATE log)
+# inicializar submodules dentro do repo populado (ARMPatch, AML_PrecompiledLibs)
+execute_process(
+  COMMAND git submodule update --init --recursive
+  WORKING_DIRECTORY ${aml_core_SOURCE_DIR}
+  RESULT_VARIABLE _aml_submod_rc
+  OUTPUT_QUIET ERROR_QUIET
+)
+if(NOT _aml_submod_rc EQUAL 0)
+  message(WARNING "Falha ao inicializar submodules de AndroidModLoader (rc=${_aml_submod_rc}). Rode 'git submodule update --init --recursive' no diretório ${aml_core_SOURCE_DIR}.")
 endif()
 
-target_compile_options(${PROJECT_NAME} PRIVATE -O3)
-target_link_options(${PROJECT_NAME} PRIVATE -s)
+# adicionar arquivos do core se existirem
+if(EXISTS "${aml_core_SOURCE_DIR}/mod/config.cpp")
+  list(APPEND PROJ_SOURCES "${aml_core_SOURCE_DIR}/mod/config.cpp")
+endif()
+if(EXISTS "${aml_core_SOURCE_DIR}/mod/logger.cpp")
+  list(APPEND PROJ_SOURCES "${aml_core_SOURCE_DIR}/mod/logger.cpp")
+endif()
+
+# inclui headers do core
+if(EXISTS "${aml_core_SOURCE_DIR}/include")
+  set(AML_CORE_INCLUDE "${aml_core_SOURCE_DIR}/include")
+endif()
+
+# --- Fetch SAUtils (opcional/recomendado) ---
+FetchContent_Declare(sautils GIT_REPOSITORY ${SAUTILS_REPO} GIT_TAG ${GIT_TAG})
+FetchContent_Populate(sautils)
+if(EXISTS "${sautils_SOURCE_DIR}/include")
+  set(SAUTILS_INCLUDE "${sautils_SOURCE_DIR}/include")
+elseif(EXISTS "${sautils_SOURCE_DIR}")
+  set(SAUTILS_INCLUDE "${sautils_SOURCE_DIR}")
+endif()
+
+# cria target
+add_library(${PROJECT_NAME} SHARED ${PROJ_SOURCES})
+
+# adiciona includes detectados
+if(AML_CORE_INCLUDE)
+  target_include_directories(${PROJECT_NAME} PRIVATE "${AML_CORE_INCLUDE}")
+endif()
+if(SAUTILS_INCLUDE)
+  target_include_directories(${PROJECT_NAME} PRIVATE "${SAUTILS_INCLUDE}")
+endif()
+
+# compatibilidade link flags
+if(COMMAND target_link_options)
+  target_link_options(${PROJECT_NAME} PRIVATE "-s")
+else()
+  set_target_properties(${PROJECT_NAME} PROPERTIES LINK_FLAGS "-s")
+endif()
