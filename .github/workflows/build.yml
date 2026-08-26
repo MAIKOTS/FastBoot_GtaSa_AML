@@ -1,1 +1,42 @@
-Bbb
+name: Build FastBoot (Android .so)
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        abi: [armeabi-v7a, arm64-v8a]
+    env:
+      ANDROID_NDK_VERSION: '25.2.9519653'   # ajuste se desejar outra versão
+      API_LEVEL: '21'                      # mínimo Android API level
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Android NDK
+        uses: r0adkll/setup-android@v2
+        with:
+          ndk: ${{ env.ANDROID_NDK_VERSION }}
+
+      - name: Configure CMake for Android (${{ matrix.abi }})
+        run: |
+          cmake -S . -B build/${{ matrix.abi }} \
+            -DCMAKE_TOOLCHAIN_FILE=$NDK_HOME/build/cmake/android.toolchain.cmake \
+            -DANDROID_ABI=${{ matrix.abi }} \
+            -DANDROID_PLATFORM=android-${API_LEVEL} \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DANDROID_STL=c++_static
+
+      - name: Build
+        run: cmake --build build/${{ matrix.abi }} --config Release -- -j
+
+      - name: Upload .so artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: libFastBoot-${{ matrix.abi }}
+          path: build/${{ matrix.abi }}/**/*.so
