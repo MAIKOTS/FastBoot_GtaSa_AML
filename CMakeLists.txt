@@ -41,11 +41,6 @@ if(EXISTS "${aml_core_SOURCE_DIR}/mod/logger.cpp")
   list(APPEND PROJ_SOURCES "${aml_core_SOURCE_DIR}/mod/logger.cpp")
 endif()
 
-# inclui headers do core
-if(EXISTS "${aml_core_SOURCE_DIR}/include")
-  set(AML_CORE_INCLUDE "${aml_core_SOURCE_DIR}/include")
-endif()
-
 # --- Fetch SAUtils (opcional/recomendado) ---
 FetchContent_Declare(sautils GIT_REPOSITORY ${SAUTILS_REPO} GIT_TAG ${GIT_TAG})
 FetchContent_Populate(sautils)
@@ -59,9 +54,15 @@ endif()
 add_library(${PROJECT_NAME} SHARED ${PROJ_SOURCES})
 
 # adiciona includes detectados
-if(AML_CORE_INCLUDE)
-  target_include_directories(${PROJECT_NAME} PRIVATE "${AML_CORE_INCLUDE}")
+# Adicionar diretório raiz do aml_core para permitir includes como <mod/amlmod.h>
+target_include_directories(${PROJECT_NAME} PRIVATE "${aml_core_SOURCE_DIR}")
+
+# Adicionar diretório include específico se existir
+if(EXISTS "${aml_core_SOURCE_DIR}/include")
+  target_include_directories(${PROJECT_NAME} PRIVATE "${aml_core_SOURCE_DIR}/include")
 endif()
+
+# Adicionar SAUtils
 if(SAUTILS_INCLUDE)
   target_include_directories(${PROJECT_NAME} PRIVATE "${SAUTILS_INCLUDE}")
 endif()
