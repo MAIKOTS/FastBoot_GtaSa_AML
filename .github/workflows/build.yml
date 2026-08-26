@@ -13,8 +13,8 @@ jobs:
       matrix:
         abi: [armeabi-v7a, arm64-v8a]
     env:
-      ANDROID_NDK_VERSION: '25.2.9519653'   # ajuste se desejar outra versão
-      API_LEVEL: '21'                      # mínimo Android API level
+      ANDROID_NDK_VERSION: '25.2.9519653'
+      API_LEVEL: '21'
     steps:
       - uses: actions/checkout@v4
 
@@ -25,16 +25,40 @@ jobs:
 
       - name: Show Android environment (debug)
         run: |
-          echo "NDK_HOME=$NDK_HOME"
-          echo "ANDROID_NDK_ROOT=$ANDROID_NDK_ROOT"
-          echo "ANDROID_NDK_HOME=$ANDROID_NDK_HOME"
-          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT"
-          ls -la "${NDK_HOME:-/dev/null}" || true
+          echo "API_LEVEL: ${API_LEVEL}"
+          echo "ANDROID_HOME: ${ANDROID_HOME}"
+          echo "ANDROID_SDK_ROOT: ${ANDROID_SDK_ROOT}"
+          echo "ANDROID_NDK_HOME: ${ANDROID_NDK_HOME}"
+          echo "ANDROID_NDK_ROOT: ${ANDROID_NDK_ROOT}"
+          echo "NDK_HOME: ${NDK_HOME}"
+          # list possible ndk directories
+          ls -la "${ANDROID_SDK_ROOT:-/dev/null}/ndk" || true
 
       - name: Configure CMake for Android (${{ matrix.abi }})
         run: |
+          # prefer ANDROID_NDK_ROOT/ANDROID_NDK_HOME if set, else use ANDROID_SDK_ROOT/ndk/<version>
+          if [ -n "${ANDROID_NDK_ROOT:-}" ]; then
+            NDK_DIR="${ANDROID_NDK_ROOT}"
+          elif [ -n "${ANDROID_NDK_HOME:-}" ]; then
+            NDK_DIR="${ANDROID_NDK_HOME}"
+          elif [ -d "${ANDROID_SDK_ROOT}/ndk/${ANDROID_NDK_VERSION}" ]; then
+            NDK_DIR="${ANDROID_SDK_ROOT}/ndk/${ANDROID_NDK_VERSION}"
+          else
+            echo "ERROR: NDK not found. Checked ANDROID_NDK_ROOT, ANDROID_NDK_HOME and ${ANDROID_SDK_ROOT}/ndk/${ANDROID_NDK_VERSION}"
+            ls -la "${ANDROID_SDK_ROOT}/ndk" || true
+            exit 1
+          fi
+
+          echo "Using NDK_DIR=${NDK_DIR}"
+          TOOLCHAIN_FILE="${NDK_DIR}/build/cmake/android.toolchain.cmake"
+          if [ ! -f "${TOOLCHAIN_FILE}" ]; then
+            echo "ERROR: toolchain file not found at ${TOOLCHAIN_FILE}"
+            ls -la "${NDK_DIR}/build/cmake" || true
+            exit 1
+          fi
+
           cmake -S . -B build/${{ matrix.abi }} \
-            -DCMAKE_TOOLCHAIN_FILE=$NDK_HOME/build/cmake/android.toolchain.cmake \
+            -DCMAKE_TOOLCHAIN_FILE="${TOOLCHAIN_FILE}" \
             -DANDROID_ABI=${{ matrix.abi }} \
             -DANDROID_PLATFORM=android-${API_LEVEL} \
             -DCMAKE_BUILD_TYPE=Release \
@@ -43,11 +67,6 @@ jobs:
       - name: Build
         run: cmake --build build/${{ matrix.abi }} --config Release -- -j
 
-      - name: Upload .so artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: libFastBoot-${{ matrix.abi }}
-          path: build/${{ matrix.abi }}/**/*.so
       - name: Upload .so artifact
         uses: actions/upload-artifact@v4
         with:
