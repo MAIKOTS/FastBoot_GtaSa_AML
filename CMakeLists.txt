@@ -42,6 +42,14 @@ if(EXISTS "${aml_core_SOURCE_DIR}/mod/logger.cpp")
 endif()
 
 # --- Fetch SAUtils (opcional/recomendado) ---
+if(EXISTS "${aml_core_SOURCE_DIR}/mod/config.cpp")
+  list(APPEND PROJ_SOURCES "${aml_core_SOURCE_DIR}/mod/config.cpp")
+endif()
+if(EXISTS "${aml_core_SOURCE_DIR}/mod/logger.cpp")
+  list(APPEND PROJ_SOURCES "${aml_core_SOURCE_DIR}/mod/logger.cpp")
+endif()
+
+# --- Fetch SAUtils (opcional/recomendado) ---
 FetchContent_Declare(sautils GIT_REPOSITORY ${SAUTILS_REPO} GIT_TAG ${GIT_TAG})
 FetchContent_Populate(sautils)
 if(EXISTS "${sautils_SOURCE_DIR}/include")
