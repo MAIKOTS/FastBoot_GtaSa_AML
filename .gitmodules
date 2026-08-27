@@ -1,7 +1,7 @@
 [submodule "AndroidModLoader"]
-    path = caminho/para/a/pasta
+    path = AndroidModLoader
     url = https://github.com/RusJJ/AndroidModLoader.git
 
 [submodule "SAUtils"]
-    path = caminho/para/a/pasta
+    path = SAUtils
     url = https://github.com/AndroidModLoader/SAUtils.git
