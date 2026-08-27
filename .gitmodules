@@ -8,8 +8,8 @@
 
 [submodule "ARMPatch"]
 	path = ARMPatch
-	url = https://github.com/RusJJ/ARMPatch
+	url = https://github.com/RusJJ/ARMPatch.git
 
 [submodule "AML_PrecompiledLibs"]
 	path = AML_PrecompiledLibs
-	url = https://github.com/RusJJ/AML_PrecompiledLibs
+	url = https://github.com/RusJJ/AML_PrecompiledLibs.git
