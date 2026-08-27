@@ -1,79 +1,81 @@
+```
 # FastBoot
 
-> An AML mod for **GTA: SA Android** that dramatically reduces the time between launching the game and actually playing it.
+> Um mod AML para **GTA: SA Android** que reduz drasticamente o tempo entre iniciar o jogo e realmente começar a jogar.
 
-FastBoot is the third generation of this project, built to take full control of the game's startup sequence — skipping unnecessary screens and jumping straight into a new game, the load menu, or your most recent save.
-
----
-
-## Features
-
-- Skip the Social Club screen
-- Configurable startup behavior
-- Automatic save slot resolution
-- Resume the latest valid save instantly
-- Start a new game automatically
-- Open the Load Game menu automatically
-- Lightweight, dependency-free build
+FastBoot é a terceira geração deste projeto, desenvolvido para assumir controle total da sequência de inicialização do jogo — pulando telas desnecessárias e entrando direto em um jogo novo, no menu de carregar jogo, ou no seu save mais recente.
 
 ---
 
-## Requirements
+## Recursos
+
+- Pula a tela do Social Club
+- Comportamento de inicialização configurável
+- Resolução automática de slots de salvamento
+- Retoma instantaneamente o último save válido
+- Inicia um novo jogo automaticamente
+- Abre o menu Carregar Jogo automaticamente
+- Leve, sem dependências
+
+---
+
+## Requisitos
 
 - [GTA: SA Android (AML)](https://discord.gg/aml-android-mod-loader-877187821511794730)
 
 ---
 
-## Installation
+## Instalação
 
-1. Copy `libFastBoot.so` to the AML mods directory.
-2. Configure FastBoot through its generated configuration file.
-3. Launch the game.
+1. Copie `libFastBoot.so` para o diretório de mods do AML.
+2. Configure o FastBoot através do arquivo de configuração gerado.
+3. Inicie o jogo.
+
 ---
 
-## Configuration
+## Configuração
 
-FastBoot generates a configuration file on first launch:
+O FastBoot gera um arquivo de configuração no primeiro lançamento:
 
 ```
 net.deviceblack.fastboot.ini
 ```
 
-Example:
+Exemplo:
 
 ```ini
 [Preferences]
 
-; Skips the Social Club screen.
+; Ignora a tela do Social Club.
 Remove Social Club = 1
 
-; Startup behavior.
+; Comportamento de inicialização.
 Start Mode = auto
 
-; Save slots checked from left to right.
+; Slots de salvamento verificados da esquerda para a direita.
 Slot List = GTASAsf9.b GTASAsf10.b
 ```
 
 ---
 
-## Startup Modes
+## Modos de Inicialização
 
-FastBoot supports multiple startup modes via the `Start Mode` key.
+O FastBoot suporta múltiplos modos de inicialização via a chave `Start Mode`.
 
-| Mode | Behavior |
-|------|----------|
-| `none` | Disables all startup automation. |
-| `newgame` | Starts a new game automatically. |
-| `loadgame` | Opens the **Load Game** menu automatically. |
-| `loadslot` | Loads the first valid save slot found in the configured slot list. |
-| `auto` | Attempts to resume a valid save. If none is found, starts a new game. |
-| `auto2` | Attempts to resume a valid save. If none is found, opens the Load Game menu. |
+| Mode | Comportamento |
+|------|---------------|
+| `none` | Desativa toda automação de inicialização. |
+| `newgame` | Inicia um novo jogo automaticamente. |
+| `loadgame` | Abre automaticamente o **menu Carregar Jogo**. |
+| `loadslot` | Carrega o primeiro slot de salvamento válido encontrado na lista de slots configurada. |
+| `auto` | Tenta retomar um save válido. Se nenhum for encontrado, inicia um novo jogo. |
+| `auto2` | Tenta retomar um save válido. Se nenhum for encontrado, abre o menu Carregar Jogo. |
 
 ---
 
-## Save Slot Resolution
+## Resolução de Slots de Salvamento
 
-FastBoot evaluates the configured save slots **left to right**. The first valid slot found determines the action to perform.
+O FastBoot avalia os slots de salvamento configurados **da esquerda para a direita**. O primeiro slot válido encontrado determina a ação a ser executada.
 
 ```ini
 Slot List = GTASAsf9.b GTASAsf10.b
@@ -82,18 +84,21 @@ Slot List = GTASAsf1.b GTASAsf5.b GTASAsf10.b
 
 ---
 
-## Version History
+## Histórico de Versões
 
-| Generation | Name |
-|------------|------|
-| 1st | SCAndSkip |
-| 2nd | SmartBoot |
-| 3rd | **FastBoot** |
+| Geração | Nome |
+|---------|------|
+| 1ª | SCAndSkip |
+| 2ª | SmartBoot |
+| 3ª | **FastBoot** |
 
 ---
 
-## License
+## Licença
 
-This project is provided **as-is** for educational and modding purposes.
+Este projeto é fornecido **como está** para fins educacionais e de modding.
 
-Use at your own responsibility.
+Use por sua própria responsabilidade.
+```
+
+— GitHub Copilot Chat Assistant
