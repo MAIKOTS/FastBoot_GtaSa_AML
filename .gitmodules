@@ -1,3 +1,7 @@
-[submodule "nome-da-pasta-do-projeto"]
+[submodule "AndroidModLoader"]
     path = caminho/para/a/pasta
-    url = https://github.com/usuario/nome-do-outro-repositorio.git
+    url = https://github.com/RusJJ/AndroidModLoader.git
+
+[submodule "SAUtils"]
+    path = caminho/para/a/pasta
+    url = https://github.com/AndroidModLoader/SAUtils.git
