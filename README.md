@@ -1,4 +1,4 @@
-```
+
 # FastBoot
 
 > Um mod AML para **GTA: SA Android** que reduz drasticamente o tempo entre iniciar o jogo e realmente começar a jogar.
