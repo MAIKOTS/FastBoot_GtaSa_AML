@@ -5,3 +5,11 @@
 [submodule "SAUtils"]
     path = SAUtils
     url = https://github.com/AndroidModLoader/SAUtils.git
+
+[submodule "ARMPatch"]
+	path = ARMPatch
+	url = https://github.com/RusJJ/ARMPatch
+
+[submodule "AML_PrecompiledLibs"]
+	path = AML_PrecompiledLibs
+	url = https://github.com/RusJJ/AML_PrecompiledLibs
