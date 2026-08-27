@@ -1,0 +1,3 @@
+[submodule "nome-da-pasta-do-projeto"]
+    path = caminho/para/a/pasta
+    url = https://github.com/usuario/nome-do-outro-repositorio.git
