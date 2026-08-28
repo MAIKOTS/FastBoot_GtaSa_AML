@@ -1,4 +1,5 @@
 #include <mod/config.h>
+#include <mod/amlmod.h>
 
 #include "main.hpp"
 #include "socialclub.hpp"
@@ -44,7 +45,7 @@ DECL_HOOK(void, MainMenuScreen_Update, void* self, float dt)
 
 	static const bool once = [&self, dt] {
 		JNIEnv* env = aml->GetJNIEnvironment();
-		if (env && classes_dex && classes_dex_len > 0)
+		if (env && classes_dex_len > 0)
 		{
 			jobject instance = aml->InjectSmaliDEX(classes_dex, classes_dex_len, "net.deviceblack.fastboot.ForceFullScreen");
 			if (instance)
@@ -64,15 +65,16 @@ ON_MOD_LOAD()
 	if(!g_pLibGTASA)
 		return;
 
-	// Verifica se o símbolo realmente existe antes de aplicar o hook para evitar crash
-	void* sym = aml->GetSym(g_pLibGTASA, "_ZN14MainMenuScreen6UpdateEf");
+	// Corrigido para uintptr_t para evitar erro de tipo
+	uintptr_t sym = aml->GetSym(g_pLibGTASA, "_ZN14MainMenuScreen6UpdateEf");
 	if(sym)
 	{
 		HOOKSYM(MainMenuScreen_Update, g_pLibGTASA, "_ZN14MainMenuScreen6UpdateEf");
 	}
 	else
 	{
-		aml->Log("[FastBoot] ERRO: Simbolo _ZN14MainMenuScreen6UpdateEf nao encontrado!");
+		// Substituído aml->Log por uma saída compatível ou ignorado se não necessário
+		logger->Error("[FastBoot] ERRO: Simbolo _ZN14MainMenuScreen6UpdateEf nao encontrado!");
 	}
 
 	if(removeSocialClub)
