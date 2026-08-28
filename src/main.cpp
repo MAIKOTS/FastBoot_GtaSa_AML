@@ -29,24 +29,20 @@ ON_MOD_PRELOAD()
 
 ON_MOD_LOAD()
 {
-	// 1. Aplica o patch seguro da EULA no libSCAnd.so (mesma lógica do AcceptEULA)
 	if(g_pLibSCAnd)
 	{
 		pEULAAccepted = cfg->Bind("AcceptEULA", true);
 		
-		// Nota: Certifique-se de que o offset 0x31C149 corresponde à versão do libSCAnd.so que você usa
-		aml->Unprot(g_pLibSCAnd + 0x31C149, 1);
-		*(bool*)(g_pLibSCAnd + 0x31C149) = true;
+		uintptr_t eulaPatchAddress = g_pLibSCAnd + 0x31C149;
+		aml->Unprot(eulaPatchAddress, 1);
+		*(bool*)(eulaPatchAddress) = true;
 		
 		cfg->Save();
 
-		// Se quiser manter a rotina antiga de remoção do social club caso exista no seu socialclub.hpp
-		if(RemoveSocialClub) {
-			RemoveSocialClub();
-		}
+		// Executa a rotina do socialclub de forma direta
+		RemoveSocialClub();
 	}
 
-	// 2. Inicia o modo configurado (ex: carregar save game direto)
 	if(g_pLibGTASA)
 	{
 		StartMode(startMode, slotList);
