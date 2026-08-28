@@ -65,16 +65,10 @@ ON_MOD_LOAD()
 	if(!g_pLibGTASA)
 		return;
 
-	// Corrigido para uintptr_t para evitar erro de tipo
 	uintptr_t sym = aml->GetSym(g_pLibGTASA, "_ZN14MainMenuScreen6UpdateEf");
 	if(sym)
 	{
 		HOOKSYM(MainMenuScreen_Update, g_pLibGTASA, "_ZN14MainMenuScreen6UpdateEf");
-	}
-	else
-	{
-		// Substituído aml->Log por uma saída compatível ou ignorado se não necessário
-		logger->Error("[FastBoot] ERRO: Simbolo _ZN14MainMenuScreen6UpdateEf nao encontrado!");
 	}
 
 	if(removeSocialClub)
