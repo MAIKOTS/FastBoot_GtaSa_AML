@@ -1,5 +1,5 @@
-#include <mod/config.h>
 #include <mod/amlmod.h>
+#include <mod/config.h>
 
 #include "main.hpp"
 #include "socialclub.hpp"
@@ -11,9 +11,8 @@ NEEDGAME(com.rockstargames.gtasa)
 uintptr_t g_pLibSCAnd = 0;
 uintptr_t g_pLibGTASA = 0;
 
-bool removeSocialClub = true;
+ConfigEntry* pEULAAccepted;
 bool showVersion = true;
-
 char startMode[16];
 char slotList[128];
 
@@ -22,57 +21,34 @@ ON_MOD_PRELOAD()
 	g_pLibSCAnd = aml->GetLib("libSCAnd.so");
 	g_pLibGTASA = aml->GetLib("libGTASA.so");
 
-	removeSocialClub = cfg->GetBool("Remove Social Club", removeSocialClub);
 	showVersion = cfg->GetBool("Show Version", showVersion);
 	
 	cfg->GetString(startMode, sizeof(startMode), "Start Mode", "auto");
 	cfg->GetString(slotList, sizeof(slotList), "Slot List", "GTASAsf10.b GTASAsf9.b");
-
-	if(!g_pLibSCAnd || !removeSocialClub)
-	{
-		removeSocialClub = false;
-		return;
-	}
-
-	if(aml->HasModOfBiggerVersion("net.rusjj.jpatch", "1.10.0"))
-		removeSocialClub = !Config("net.rusjj.jpatch").GetBool("RemoveSocialClub", false, "Gameplay");
-}
-
-// Fullscreen Force 😽
-DECL_HOOK(void, MainMenuScreen_Update, void* self, float dt)
-{
-	MainMenuScreen_Update(self, dt);
-
-	static const bool once = [&self, dt] {
-		JNIEnv* env = aml->GetJNIEnvironment();
-		if (env && classes_dex_len > 0)
-		{
-			jobject instance = aml->InjectSmaliDEX(classes_dex, classes_dex_len, "net.deviceblack.fastboot.ForceFullScreen");
-			if (instance)
-			{
-				CallJavaMethod<void>(instance, "enableFullScreen", "(Z)V", showVersion ? JNI_TRUE : JNI_FALSE);
-				env->DeleteGlobalRef(instance);
-			}
-		}
-
-		MenuEntryPoint(self, dt); // startmode.cpp
-		return true;
-	}();
 }
 
 ON_MOD_LOAD()
 {
-	if(!g_pLibGTASA)
-		return;
-
-	uintptr_t sym = aml->GetSym(g_pLibGTASA, "_ZN14MainMenuScreen6UpdateEf");
-	if(sym)
+	// 1. Aplica o patch seguro da EULA no libSCAnd.so (mesma lógica do AcceptEULA)
+	if(g_pLibSCAnd)
 	{
-		HOOKSYM(MainMenuScreen_Update, g_pLibGTASA, "_ZN14MainMenuScreen6UpdateEf");
+		pEULAAccepted = cfg->Bind("AcceptEULA", true);
+		
+		// Nota: Certifique-se de que o offset 0x31C149 corresponde à versão do libSCAnd.so que você usa
+		aml->Unprot(g_pLibSCAnd + 0x31C149, 1);
+		*(bool*)(g_pLibSCAnd + 0x31C149) = true;
+		
+		cfg->Save();
+
+		// Se quiser manter a rotina antiga de remoção do social club caso exista no seu socialclub.hpp
+		if(RemoveSocialClub) {
+			RemoveSocialClub();
+		}
 	}
 
-	if(removeSocialClub)
-		RemoveSocialClub();
-
-	StartMode(startMode, slotList);
+	// 2. Inicia o modo configurado (ex: carregar save game direto)
+	if(g_pLibGTASA)
+	{
+		StartMode(startMode, slotList);
+	}
 }
