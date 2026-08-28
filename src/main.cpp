@@ -43,9 +43,16 @@ DECL_HOOK(void, MainMenuScreen_Update, void* self, float dt)
 	MainMenuScreen_Update(self, dt);
 
 	static const bool once = [&self, dt] {
-		jobject instance = aml->InjectSmaliDEX(classes_dex, classes_dex_len, "net.deviceblack.fastboot.ForceFullScreen");
-		CallJavaMethod<void>(instance, "enableFullScreen", "(Z)V", showVersion ? JNI_TRUE : JNI_FALSE);
-		aml->GetJNIEnvironment()->DeleteGlobalRef(instance);
+		JNIEnv* env = aml->GetJNIEnvironment();
+		if (env && classes_dex && classes_dex_len > 0)
+		{
+			jobject instance = aml->InjectSmaliDEX(classes_dex, classes_dex_len, "net.deviceblack.fastboot.ForceFullScreen");
+			if (instance)
+			{
+				CallJavaMethod<void>(instance, "enableFullScreen", "(Z)V", showVersion ? JNI_TRUE : JNI_FALSE);
+				env->DeleteGlobalRef(instance);
+			}
+		}
 
 		MenuEntryPoint(self, dt); // startmode.cpp
 		return true;
@@ -57,7 +64,16 @@ ON_MOD_LOAD()
 	if(!g_pLibGTASA)
 		return;
 
-	HOOKSYM(MainMenuScreen_Update, g_pLibGTASA, "_ZN14MainMenuScreen6UpdateEf");
+	// Verifica se o símbolo realmente existe antes de aplicar o hook para evitar crash
+	void* sym = aml->GetSym(g_pLibGTASA, "_ZN14MainMenuScreen6UpdateEf");
+	if(sym)
+	{
+		HOOKSYM(MainMenuScreen_Update, g_pLibGTASA, "_ZN14MainMenuScreen6UpdateEf");
+	}
+	else
+	{
+		aml->Log("[FastBoot] ERRO: Simbolo _ZN14MainMenuScreen6UpdateEf nao encontrado!");
+	}
 
 	if(removeSocialClub)
 		RemoveSocialClub();
